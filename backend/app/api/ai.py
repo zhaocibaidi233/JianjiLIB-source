@@ -39,7 +39,7 @@ def get_optimize_mode(db: Session = Depends(get_db)):
     from ..models import Setting
     from ..services.optimize import catalog, optimize_rules_value
     row = db.get(Setting, "optimize_mode")
-    mode = (row.value or {}).get("mode", "auto") if row else "auto"
+    mode = (row.value or {}).get("mode", "manual") if row else "manual"
     return {"mode": mode, "rules": catalog(optimize_rules_value(db))}
 
 
@@ -76,7 +76,7 @@ def put_optimize_mode(payload: dict, db: Session = Depends(get_db)):
         except ValueError as e:
             raise HTTPException(400, str(e))
     row = db.get(Setting, "optimize_mode")
-    mode = (row.value or {}).get("mode", "auto") if row else "auto"
+    mode = (row.value or {}).get("mode", "manual") if row else "manual"
     return {"saved": True, "mode": mode, "rules": catalog(optimize_rules_value(db))}
 
 
@@ -320,8 +320,12 @@ def put_setting(key: str, payload: dict, db: Session = Depends(get_db)):
                 or not (0 <= base_digits <= CLASS_NO_DIGITS_MAX)):
             raise HTTPException(
                 400, f"字母后数字截取位数须为 0~{CLASS_NO_DIGITS_MAX} 之间的整数")
+        enabled = value.get("enabled", True)
+        if not isinstance(enabled, bool):
+            raise HTTPException(400, "分类号截取开关必须是布尔值")
         value = {"digits": digits, "dash_digits": dash_digits,
-                 "marks": marks, "base_digits": base_digits}
+                 "marks": marks, "base_digits": base_digits,
+                 "enabled": enabled}
     elif key == "label_format":
         from ..services.settings import (
             DEFAULT_LABEL_FORMAT, LABEL_FORMAT_LIMITS,

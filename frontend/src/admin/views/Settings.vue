@@ -284,7 +284,7 @@ async function saveRules() {
 const barcodeDigits = ref<number[]>([])
 const barcodeBusy = ref(false)
 const allDigits = Array.from({ length: 13 }, (_, index) => index + 4)
-const classNo = reactive({ digits: 2, dash_digits: 2, marks: 'auto', base_digits: 0 })
+const classNo = reactive({ digits: 2, dash_digits: 2, marks: 'auto', base_digits: 0, enabled: false })
 const classBusy = ref(false)
 /**
  * 本馆机构代码（801$b）。留空 = 不自动生成 801。
@@ -363,7 +363,7 @@ async function saveClassNo() {
 }
 
 /* ---------------- 自动规范 ---------------- */
-const optimizeMode = ref<'auto' | 'manual'>('auto')
+const optimizeMode = ref<'auto' | 'manual'>('manual')
 const optimizeRules = ref<OptimizeRule[]>([])
 const optimizeLoading = ref(true)
 const optimizeBusy = ref(false)
@@ -1105,23 +1105,27 @@ onMounted(() => {
               </button>
             </div>
             <div class="card-body">
+              <label class="settings-rule-toggle" style="margin-bottom: 14px">
+                <input v-model="classNo.enabled" type="checkbox" :disabled="!canWrite" />
+                <span><strong>启用分类号截取</strong><small>关闭时套录与导入保留原分类号</small></span>
+              </label>
               <div class="form-grid settings-four-col">
                 <div class="field">
                   <label>小数点后保留位数</label>
-                  <input v-model.number="classNo.digits" class="input" type="number" min="0" max="6" />
+                  <input v-model.number="classNo.digits" class="input" type="number" min="0" max="6" :disabled="!classNo.enabled || !canWrite" />
                 </div>
                 <div class="field">
                   <label>总论复分号位数</label>
-                  <input v-model.number="classNo.dash_digits" class="input" type="number" min="0" max="6" />
+                  <input v-model.number="classNo.dash_digits" class="input" type="number" min="0" max="6" :disabled="!classNo.enabled || !canWrite" />
                 </div>
                 <div class="field">
                   <label>字母后数字阈值</label>
-                  <input v-model.number="classNo.base_digits" class="input" type="number" min="0" max="6" />
+                  <input v-model.number="classNo.base_digits" class="input" type="number" min="0" max="6" :disabled="!classNo.enabled || !canWrite" />
                   <span class="field-note">0 表示关闭此规则</span>
                 </div>
                 <div class="field">
                   <label>复分号口径</label>
-                  <select v-model="classNo.marks" class="select">
+                  <select v-model="classNo.marks" class="select" :disabled="!classNo.enabled || !canWrite">
                     <option value="auto">自动判定</option>
                     <option value="keep">一律保留</option>
                     <option value="drop">一律去掉</option>

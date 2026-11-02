@@ -11,14 +11,14 @@ import copy
 
 from sqlalchemy.orm import Session
 
-from ..core.clc import DEFAULT_CLASS_NO_RULE, ClassNoRule, rule_from_raw
+from ..core.clc import DISABLED_CLASS_NO_RULE, ClassNoRule, rule_from_raw
 
 # 分类号截取的全局设置键（不分图书库：编目规则是全馆统一的作业参数）。
 CLASS_NO_KEY = "class_no"
 
 
 def class_no_rule(db: Session) -> ClassNoRule:
-    """分类号截取规则（全局设置 `class_no`，默认 `DEFAULT_CLASS_NO_RULE`）。
+    """分类号截取规则（全局设置 `class_no`；新库未配置时默认关闭）。
 
     2026-10-08 起这条设置从一个 `digits` 变成三键，再变成四键
     （加 `dash_digits`，见），再加一键 `base_digits`（字母后数字位数阈值，
@@ -32,9 +32,11 @@ def class_no_rule(db: Session) -> ClassNoRule:
     try:
         from ..models import Setting
         row = db.get(Setting, CLASS_NO_KEY)
-        return rule_from_raw(row.value if row is not None else None)
+        if row is None:
+            return DISABLED_CLASS_NO_RULE
+        return rule_from_raw(row.value)
     except Exception:
-        return DEFAULT_CLASS_NO_RULE
+        return DISABLED_CLASS_NO_RULE
 
 
 # ---------------- 书标格式 ----------------

@@ -134,6 +134,8 @@ class ClassNoRule:
     dash_digits: int = DEFAULT_DASH_DIGITS
     marks: str = DEFAULT_MARKS_MODE
     base_digits: int = DEFAULT_BASE_DIGITS
+    # 新部署默认关闭；旧库没有该键时读取侧仍按 True 兼容。
+    enabled: bool = True
 
     def as_dict(self) -> dict:
         """按固定键序出参（`GET /settings/class_no` 的返回体，前端逐键绑定）。
@@ -144,11 +146,13 @@ class ClassNoRule:
         return {"digits": self.digits,
                 "dash_digits": self.dash_digits,
                 "marks": self.marks,
-                "base_digits": self.base_digits}
+                "base_digits": self.base_digits,
+                "enabled": self.enabled}
 
 
 # 出厂规则（模块级单例；frozen 数据类可安全共享，勿改成可变对象）。
 DEFAULT_CLASS_NO_RULE = ClassNoRule()
+DISABLED_CLASS_NO_RULE = ClassNoRule(enabled=False)
 
 
 def _clean_digits(raw, default: int) -> int:
@@ -187,7 +191,8 @@ def rule_from_raw(raw) -> ClassNoRule:
                                   DEFAULT_DASH_DIGITS),
         marks=marks,
         base_digits=_clean_digits(raw.get("base_digits", DEFAULT_BASE_DIGITS),
-                                  DEFAULT_BASE_DIGITS))
+                                  DEFAULT_BASE_DIGITS),
+        enabled=(raw.get("enabled") if isinstance(raw.get("enabled"), bool) else True))
 
 
 def _as_rule(rule) -> ClassNoRule:
@@ -251,6 +256,8 @@ def shorten_class_no(class_no: str | None,
     'S759'
     """
     r = _as_rule(rule)
+    if not r.enabled:
+        return "" if class_no is None else str(class_no).strip()
     s = "" if class_no is None else str(class_no).strip()
     if not s:
         return s
@@ -357,6 +364,8 @@ def shorten_record_class_nos(rec, rule: ClassNoRule | int = DEFAULT_CLASS_NO_RUL
     两处不要各写一遍遍历。
     """
     r = _as_rule(rule)
+    if not r.enabled:
+        return 0
     processed = 0
     for f in rec.get_fields("690"):
         for sf in getattr(f, "subfields", None) or []:

@@ -26,7 +26,7 @@ from .settings import class_no_rule
 log = logging.getLogger(__name__)
 
 BARCODE_KEY_SUFFIX = "__barcode__"
-_DEFAULT_BARCODE_DIGITS = 8
+_DEFAULT_BARCODE_DIGITS = 7
 
 
 def barcode_key(library_id: int) -> str:
@@ -73,7 +73,7 @@ def barcode_digits_list(db: Session) -> list[int]:
 
     兼容两种存法：新的列表 `{"digits": [7, 8]}` 与旧的单值 `{"digits": 8}`。
     多值是真实需求——旧库常有 7 位历史号与 8 位新号并存。
-    脏值（布尔 / 非整数 / 越界 4~16）逐项丢弃；全丢光则回退默认 `[8]`。
+    脏值（布尔 / 非整数 / 越界 4~16）逐项丢弃；全丢光则回退默认 `[7]`。
     **绝不抛异常**（与 `services/settings.py` 的容错读法一致）。
     """
     try:
