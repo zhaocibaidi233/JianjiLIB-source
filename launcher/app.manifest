@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <!--
+    简籍启动器的进程级清单。
+
+    ## 为什么需要这一份
+
+    代码里只调了 `SetProcessDPIAware()`（系统级 DPI 感知）。在 150% / 200% 缩放或
+    多显示器混用（笔记本 150% + 外接 100%）时，Windows 会把整个窗口按位图拉伸，
+    文字发虚、1px 边框变成 2px 灰边。
+
+    声明 **PerMonitorV2** 之后，窗口在每块显示器上按各自的 DPI 渲染，跨屏拖动时会收到
+    `WM_DPICHANGED` 并重排。WinForms 从 .NET Framework 4.7 起支持这一模式。
+
+    ## 为什么同时保留 dpiAware / dpiAwareness 两级
+
+    `dpiAwareness`（新的 `windowsSettings` 写法）在 Win10 1703+ 才认；老系统只认
+    `dpiAware`。两级都写，老系统退到 `true/pm`（每显示器 DPI 感知，够用），新系统
+    走 PerMonitorV2。代码里的 `SetProcessDPIAware()` 保留为**兜底**：清单没被嵌进去
+    （有人手工 csc 编译）时仍能拿到基本的 DPI 感知，不会退回位图拉伸。
+
+    ⚠️ 改这个文件必须重新编译 exe 才生效（清单是嵌入资源，不是外部文件）。
+  -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
+    </windowsSettings>
+  </application>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10 / 11：不加这一段时有些 API 会走兼容层 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+    </application>
+  </compatibility>
+</assembly>

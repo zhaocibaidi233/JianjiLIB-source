@@ -1,0 +1,325 @@
+/* ============================================================================
+ * 简籍 全局设计令牌与外壳样式（theme.css）
+ *
+ * 为什么单独一个文件：改造前颜色、圆角、间距全散在各行内联样式里，改一处要翻十几个
+ * 页面。这里只放**全局可复用的令牌与外壳规则**，各业务页仍保持自己的 scoped 样式。
+ *
+ * ⚠️ 与 Element Plus 的按需引入配套（见 vite.config.ts、main.ts）：
+ *   - 这里**不 import** 任何 `element-plus/dist/index.css`（全量样式），只通过覆盖
+ *     EP 的 CSS 变量（`--el-*`）来改主题——EP 的组件样式运行时读这些变量。
+ *   - 暗色模式靠 `html.dark` 类 + EP 的 `theme-chalk/dark/css-vars.css`（在 main.ts 引入）。
+ *     我们对 primary 的自定义分**亮/暗两份**写：亮色在 `:root`，暗色在 `html.dark`
+ *     （选择器多一个元素，特异度高于 `:root`，才能盖过 EP 暗色变量里对 primary 的重定义）。
+ * ========================================================================== */
+
+:root {
+  /* ==========================================================================
+   * 简籍 JIANJI · 设计令牌
+   *
+   * 视觉基线：松墨绿主色 + 纸白底 + 暖金点缀 + 宋体书名感。
+   * 真正的信息密度、表单高度与断点一律沿用原系统，避免影响简编表单
+   * 「1366×768 零滚动」等版面契约；这里只换色彩、层次与品牌细节。
+   * ======================================================================== */
+
+  /* —— 品牌主色（松墨绿）—— */
+  --app-primary: #175e54;
+  --app-primary-deep: #0e463e;
+  --app-primary-600: #1f7266;
+  --app-primary-soft: #e5f1ec;
+  --app-primary-softer: #f0f6f3;
+
+  /* —— 暖金点缀：书名号、排行、重点数值，不做大面积底色 —— */
+  --app-accent: #e4a23f;
+  --app-accent-deep: #7a5210;
+  --app-accent-soft: #faf0dd;
+
+  /* 派生 EP 的主色梯度。用 color-mix 让 hover/active/禁用态与主色保持同一色系。 */
+  --el-color-primary: var(--app-primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--app-primary) 70%, white);
+  --el-color-primary-light-5: color-mix(in srgb, var(--app-primary) 50%, white);
+  --el-color-primary-light-7: color-mix(in srgb, var(--app-primary) 30%, white);
+  --el-color-primary-light-8: color-mix(in srgb, var(--app-primary) 20%, white);
+  --el-color-primary-light-9: color-mix(in srgb, var(--app-primary) 12%, white);
+  --el-color-primary-dark-2: color-mix(in srgb, var(--app-primary) 80%, black);
+
+  /* —— 圆角：卡片柔、控件克制，保持高密度页面的利落感 —— */
+  --el-border-radius-base: 9px;
+  --el-border-radius-small: 7px;
+  --app-radius-card: 14px;
+
+  /* —— 纸面与墨色 —— */
+  --app-sidebar-w: 216px;
+  --app-surface: #ffffff;
+  --app-surface-2: #f4f6f2;      /* 纸面底色（比纯白略暖，卡片浮得起来） */
+  --app-surface-soft: #f9faf7;   /* 卡片内的次级块 */
+  --app-surface-warm: #fbfaf6;   /* 暖白块 */
+  --app-border: #e5e8e2;
+  --app-border-strong: #d7dcd4;
+  --app-text: #182420;
+  /* 弱化字必须同时过白底与纸面底 AA：原型里的 #6b7a73 在纸面只有 4.15:1，
+     压到 #64736c 后白底 4.99:1、纸面 4.59:1，仍比正文淡一档。 */
+  --app-text-muted: #64736c;
+
+  /* EP 的次级文字是页面里用得最多的一档（12px 说明、表单提示），
+     与 --app-text-muted 同一个值，确保两块底都过 AA。
+     placeholder 不压深：它要保留「还没填」的暗示，且 WCAG 不计占位文本。 */
+  --el-text-color-primary: #182420;
+  --el-text-color-regular: #33423b;
+  --el-text-color-secondary: #64736c;
+  --el-text-color-placeholder: #93a098;
+  --el-border-color: #e5e8e2;
+  --el-border-color-light: #ebeee8;
+  --el-border-color-lighter: #f0f2ed;
+  --el-border-color-extra-light: #f5f7f2;
+  --el-fill-color: #f4f6f2;
+  --el-fill-color-light: #f7f9f5;
+  --el-fill-color-lighter: #fafbf8;
+  --el-fill-color-blank: #ffffff;
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #f4f6f2;
+  --el-bg-color-overlay: #ffffff;
+
+  --app-menu-active-bg: #e9f2ee;
+  --app-font-serif: Georgia, "Songti SC", "STSong", "SimSun", serif;
+  --app-shadow-card: 0 1px 2px rgba(24, 36, 32, .04);
+  --app-shadow-lift: 0 18px 48px -24px rgba(24, 36, 32, .28);
+
+  /* —— 间距刻度（供工具类与页面复用，收敛散落的 gap/margin 数值）—— */
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 12px;
+  --app-space-4: 16px;
+  --app-space-5: 24px;
+}
+
+/* 暗色：覆盖品牌色梯度与外壳表面色。EP 的中性色（文本/边框/填充）由
+   theme-chalk/dark/css-vars.css 统一处理，这里只补我们自己的 --app-* 令牌。 */
+html.dark {
+  --app-primary: #7fc4b4;
+  --app-primary-deep: #a9d9cd;
+  --app-primary-600: #6db6a6;
+  --app-primary-soft: #1d3a32;
+  --app-primary-softer: #182d27;
+  --app-accent: #e7b467;
+  --app-accent-deep: #f0c98c;
+  --app-accent-soft: #362b1a;
+
+  --el-color-primary: var(--app-primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--app-primary) 78%, black);
+  --el-color-primary-light-5: color-mix(in srgb, var(--app-primary) 55%, black);
+  --el-color-primary-light-7: color-mix(in srgb, var(--app-primary) 32%, black);
+  --el-color-primary-light-8: color-mix(in srgb, var(--app-primary) 22%, black);
+  --el-color-primary-light-9: color-mix(in srgb, var(--app-primary) 14%, black);
+  --el-color-primary-dark-2: color-mix(in srgb, var(--app-primary) 85%, white);
+
+  --app-surface: #1a211d;
+  --app-surface-2: #111713;
+  --app-surface-soft: #202923;
+  --app-surface-warm: #1d2520;
+  --app-border: #2c3831;
+  --app-border-strong: #3a4a41;
+  --app-text: #e8ede8;
+  --app-text-muted: #a7b3ab;
+
+  --el-text-color-primary: #e8ede8;
+  --el-text-color-regular: #cfd8d2;
+  --el-text-color-secondary: #a7b3ab;
+  --el-text-color-placeholder: #738078;
+  --el-border-color: #2c3831;
+  --el-border-color-light: #334139;
+  --el-border-color-lighter: #3b4a42;
+  --el-border-color-extra-light: #26312b;
+  --el-fill-color: #232c27;
+  --el-fill-color-light: #202923;
+  --el-fill-color-lighter: #1d2520;
+  --el-fill-color-blank: #1a211d;
+  --el-bg-color: #1a211d;
+  --el-bg-color-page: #111713;
+  --el-bg-color-overlay: #1f2822;
+
+  --app-menu-active-bg: #22372f;
+  --app-shadow-card: 0 1px 2px rgba(0, 0, 0, .35);
+  --app-shadow-lift: 0 18px 48px -24px rgba(0, 0, 0, .8);
+}
+
+/* 书名、品牌与登录标题共用这一档，给管理工具留下一点「图书馆」的气质。 */
+.app-display {
+  font-family: var(--app-font-serif);
+  letter-spacing: .01em;
+}
+
+/* 细滚动条：内容区滚动条默认又宽又抢眼，工作台里换成贴边的细条。 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--app-text-muted) 45%, transparent) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--app-text-muted) 40%, transparent);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--app-text-muted) 65%, transparent);
+  background-clip: content-box;
+}
+
+/* —— 间距工具类：替代模板里散落的 style="display:flex; gap:8px" 之类 ——
+   业务页可逐步迁移过来（这轮先建能力、外壳自用，不批量改 18 个页面）。 */
+.app-row {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  flex-wrap: wrap;
+}
+.app-row--loose { gap: var(--app-space-3); }
+.app-row--spread { justify-content: space-between; }
+.app-spacer { flex: 1; }
+.app-stack { display: flex; flex-direction: column; gap: var(--app-space-3); }
+.app-muted { color: var(--app-text-muted); font-size: 12px; }
+
+
+/* ============================================================================
+ * Element Plus 组件精修（全站生效，不改任何 view 模板）
+ *
+ * 为什么放这里而不是各页 scoped：每个页面都在用 el-card / el-table / el-button…，
+ * 在这一个文件里调，全站一起升级，且不与"读源码/读 style 块"的测试耦合
+ * （没有任何测试读 theme.css）。颜色一律走 --app-* 令牌，暗色模式自动跟随。
+ *
+ * ⚠️ 选择器一律写成**双类名**（`.el-card.el-card`、`.el-table.el-table .el-card__body` 等）。
+ *    原因：EP 的组件样式是**按页面 chunk 懒加载注入**的，注入时机晚于 theme.css，
+ *    同特异度下"后注入者赢"，我们的覆盖会被 EP 悄悄盖掉（实测：单类 `.el-card`
+ *    的圆角/内边距没生效，仍是 EP 默认值）。双类名把特异度提到 (0,2,0)，
+ *    高于 EP 的 (0,1,0)，**与加载顺序无关**地稳定生效。
+ * ========================================================================== */
+
+/* —— 卡片：纸面容器。细边、暖白头部、克制阴影 —— */
+.el-card.el-card {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card) !important;
+  background: var(--app-surface);
+}
+.el-card.el-card .el-card__header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card) var(--app-radius-card) 0 0;
+  background: var(--app-surface);
+  font-weight: 600;
+}
+.el-card.el-card .el-card__body { padding: 16px 18px; }
+
+/* —— 表格：编目系统的主战场，把层次和可读性做足 —— */
+.el-table.el-table {
+  --el-table-border-color: var(--app-border);
+  --el-table-header-bg-color: var(--app-surface-soft);
+  --el-table-header-text-color: var(--app-text);
+  --el-table-row-hover-bg-color: var(--app-menu-active-bg);
+  --el-table-current-row-bg-color: var(--app-menu-active-bg);
+  border-radius: 12px;
+  font-size: 13px;
+}
+.el-table.el-table th.el-table__cell { font-weight: 600; }
+/* 表格外圈圆角：EP 的表体是独立元素，需要裁一下四角。
+   ⚠️ 只裁**外层**：`__inner-wrapper` 上写 overflow:hidden 会把表体自己的横向滚动
+   一起掐掉 —— 列宽合计 1362px、容器 1046px 时，右侧「来源」「操作」被裁掉且**滚
+   不到**（2026-10-26 评测 P2，1366 视口实测）。 */
+.el-table.el-table { border-radius: 12px; overflow: hidden; }
+.el-table.el-table .el-table__inner-wrapper { border-radius: 12px; }
+.el-table.el-table .cell { line-height: 1.5; }
+
+/* 横向滚动条必须**看得见**。
+ *
+ * EP 给滚动容器加了 `--hidden-default`（`scrollbar-width: none`）：内容能横滚，但
+ * 没有条、也没有任何提示。图书库列表在 1366 视口下列宽合计 1362px、容器 1046px，
+ * 右侧「来源」整列被裁——用户不知道能滚，只会以为列丢了（2026-10-26 评测 P2，
+ * 真视口实测 scrollWidth 1362 / clientWidth 1046）。
+ *
+ * 只在**确实溢出**时显示：`scrollbar-width: thin` + 自绘 WebKit 滚动条，未溢出时
+ * 不会多出一条空白轨道。 */
+.legacy-page .el-table .el-scrollbar__wrap--hidden-default {
+  scrollbar-width: thin;
+}
+.legacy-page .el-table .el-scrollbar__wrap--hidden-default::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.legacy-page .el-table .el-scrollbar__wrap--hidden-default::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--app-text, #333) 28%, transparent);
+  border-radius: 6px;
+}
+.legacy-page .el-table .el-scrollbar__wrap--hidden-default::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--app-text, #333) 45%, transparent);
+}
+.legacy-page .el-table .el-scrollbar__wrap--hidden-default::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* —— 按钮 / 标签 / 徽标：圆角更柔，主按钮带一层极轻的墨绿投影 —— */
+.el-button.el-button { font-weight: 500; border-radius: 8px; }
+.el-button--primary.el-button--primary:not(.is-disabled):not(.is-plain):not(.is-text):not(.is-link) {
+  box-shadow: 0 5px 14px -8px color-mix(in srgb, var(--app-primary) 70%, transparent);
+}
+/* 暗色下主色是浅薄荷绿：实心主按钮的白字只有约 2:1，必须换成墨色字。
+   plain / text / link 三种按钮仍是深底上的主色字，不套这条。 */
+html.dark .el-button--primary.el-button--primary:not(.is-disabled):not(.is-plain):not(.is-text):not(.is-link) {
+  --el-button-text-color: #0c1a16;
+  --el-button-hover-text-color: #0c1a16;
+  --el-button-active-text-color: #0c1a16;
+}
+/* 分页当前页同理：浅色块上的白数字不达标 */
+html.dark .el-pagination.el-pagination.is-background .el-pager li.is-active { color: #0c1a16; }
+.el-tag.el-tag { border-radius: 6px; }
+
+/* —— 输入类控件：纸面内凹细边，聚焦时由主色接管（外层 outline 见下） —— */
+.el-input__wrapper.el-input__wrapper,
+.el-textarea__inner.el-textarea__inner {
+  background-color: var(--app-surface);
+  box-shadow: 0 0 0 1px var(--app-border) inset;
+  border-radius: 9px;
+}
+.el-input__wrapper.el-input__wrapper:hover,
+.el-textarea__inner.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--app-border-strong) inset;
+}
+.el-input__wrapper.el-input__wrapper:focus-within {
+  box-shadow: 0 0 0 1px var(--app-primary) inset;
+}
+.el-select__wrapper.el-select__wrapper {
+  background-color: var(--app-surface);
+  box-shadow: 0 0 0 1px var(--app-border) inset;
+  border-radius: 9px;
+}
+.el-select__wrapper.el-select__wrapper:hover { box-shadow: 0 0 0 1px var(--app-border-strong) inset; }
+.el-select__wrapper.el-select__wrapper.is-focused { box-shadow: 0 0 0 1px var(--app-primary) inset; }
+
+/* —— 对话框：更大圆角 + 头部标题加重 —— */
+.el-dialog.el-dialog { border-radius: 16px; overflow: hidden; }
+.el-dialog.el-dialog .el-dialog__header { padding: 18px 20px 12px; margin-right: 0; }
+.el-dialog.el-dialog .el-dialog__title { font-weight: 700; font-size: 16px; }
+.el-dialog.el-dialog .el-dialog__body { padding: 8px 20px; color: var(--app-text); }
+.el-dialog.el-dialog .el-dialog__footer { padding: 12px 20px 18px; }
+
+/* —— 表单：标签弱化、让输入框成为视觉主体 —— */
+.el-form-item.el-form-item .el-form-item__label { color: var(--app-text-muted); font-weight: 500; }
+
+/* —— 提示条 / 分页 / 标签页：细节圆角与留白 —— */
+.el-alert.el-alert { border-radius: 10px; }
+
+
+/* ==========================================================================
+   书标打印页以 body.printing-labels 隐藏新工作台外壳
+   ========================================================================== */
+@media print {
+  body.printing-labels .app,
+  body.printing-labels .main,
+  body.printing-labels .content {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+  body.printing-labels .content { padding: 0 !important; }
+}

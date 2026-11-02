@@ -1,0 +1,786 @@
+/* ==========================================================================
+   简籍 · 旧版编目 / 条码 / 书标页的新版视觉层
+   保留原版 DOM、字段顺序、焦点链与尺寸契约，只统一外观：
+   卡片、页头、筛选条、表格、表单控件、弹窗与暗色。
+   ========================================================================== */
+
+/* ---------- 令牌对齐新版设计系统 ---------- */
+
+/* EP 组件字体对齐设计系统（放 :root：ElMessage / ElMessageBox 会瞬移到
+   body，挂 .legacy-page 够不着）。族换掉 EP 默认的 Helvetica 栈——如今
+   页面主体已由 --font-sans 渲染，但每个新用的 EP 组件都会重新吃这个
+   变量，留着就是一处隐患；基础字号 14px → 13.5px，按钮 / 输入框 /
+   对话框等与新页 .btn / .input 同号。el-table 的 13px 是显式规则
+   （见下文 .el-table 覆盖），不受此变量影响。 */
+:root {
+  --el-font-family: var(--font-sans);
+  --el-font-size-base: 13.5px;
+  --el-pagination-font-size: 13px;
+}
+
+.legacy-page {
+  --app-primary: var(--primary);
+  --app-primary-deep: var(--primary-deep);
+  --app-primary-600: var(--primary-600);
+  --app-primary-soft: var(--primary-soft);
+  --app-primary-softer: var(--primary-softer);
+  --app-accent: var(--accent);
+  --app-accent-deep: var(--accent-deep);
+  --app-accent-soft: var(--accent-soft);
+  --app-surface: var(--surface);
+  --app-surface-2: var(--bg-deep);
+  --app-surface-soft: var(--surface-soft);
+  --app-surface-warm: var(--surface-warm);
+  --app-border: var(--line);
+  --app-border-strong: var(--line-strong);
+  --app-text: var(--ink);
+  --app-text-muted: var(--muted);
+  --app-menu-active-bg: var(--primary-softer);
+  --app-shadow-card: var(--shadow-sm);
+  --app-shadow-lift: var(--shadow-md);
+  --app-radius-card: 14px;
+  --app-font-serif: var(--font-serif);
+
+  --el-color-primary: var(--primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--surface));
+  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, var(--surface));
+  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, var(--surface));
+  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, var(--surface));
+  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  --el-color-primary-dark-2: var(--primary-deep);
+  --el-text-color-primary: var(--ink);
+  --el-text-color-regular: var(--text);
+  --el-text-color-secondary: var(--muted);
+  --el-text-color-placeholder: var(--faint);
+  /* 信息性标签不用 EP 默认的浅绿/浅灰（对白底只有 2.1–3.1）；
+     统一到设计系统的深色文字 + 浅底。 */
+  --el-color-info: #4b5a53;
+  --el-color-info-light-8: #dfe6e1;
+  --el-color-info-light-9: #eef1ef;
+  --el-color-success: #1f6b46;
+  --el-color-success-light-8: #d5e9df;
+  --el-color-success-light-9: #e8f4ee;
+  --el-color-warning: #7a5210;
+  --el-color-warning-light-8: #f2e2c4;
+  --el-color-warning-light-9: #faf0dd;
+  --el-border-color: var(--line);
+  --el-border-color-light: var(--line);
+  --el-border-color-lighter: var(--line);
+  --el-border-color-extra-light: var(--line);
+  --el-fill-color: var(--surface-soft);
+  --el-fill-color-light: var(--surface-soft);
+  --el-fill-color-lighter: var(--surface-soft);
+  --el-fill-color-blank: var(--surface);
+  --el-bg-color: var(--surface);
+  --el-bg-color-page: var(--bg);
+  --el-bg-color-overlay: var(--surface);
+  --el-border-radius-base: 9px;
+
+  color: var(--text);
+}
+
+/* ---------- 页头：标题交给新版顶栏，页面内保留动作区 ---------- */
+.legacy-page .page-header { margin-bottom: 10px; align-items: center; }
+.legacy-page .page-header__text { display: none; }
+.legacy-page .page-header__actions { gap: 8px; }
+.legacy-page .page-header__actions .el-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+.legacy-page .page-header__actions > span { font-size: 11.5px; color: var(--muted); }
+.legacy-page.legacy-list-page .page-header,
+.legacy-page.legacy-barcode-page .page-header { display: none; }
+.legacy-page.legacy-label-page .page-header { justify-content: flex-end; padding: 0 2px; }
+.legacy-page.legacy-label-page .page-header__actions { width: 100%; justify-content: flex-end; }
+.legacy-page.legacy-label-page .page-header__actions > .el-button:first-child { margin-right: auto; }
+
+/* ---------- 卡片 ---------- */
+.legacy-page.legacy-page .el-card.el-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.legacy-page.legacy-page .el-card.el-card .el-card__header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.legacy-page.legacy-page .el-card.el-card .el-card__body { padding: 16px 18px; }
+
+/* ---------- 按钮 ---------- */
+.legacy-page.legacy-page .el-button.el-button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+.legacy-page.legacy-page .el-button--primary.el-button--primary:not(.is-disabled):not(.is-plain):not(.is-text):not(.is-link) {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 1px 2px rgba(24, 36, 32, 0.08);
+}
+.legacy-page.legacy-page .el-button--primary.el-button--primary:not(.is-disabled):not(.is-plain):not(.is-text):not(.is-link):hover {
+  background: var(--primary-deep);
+  border-color: var(--primary-deep);
+}
+.legacy-page.legacy-page .el-button.is-link { color: var(--primary); }
+.legacy-page.legacy-page .el-button.is-link:hover { color: var(--primary-deep); }
+
+/* 暗色下沿用统一的 var(--primary)/var(--primary-deep)，不再硬编码专属绿，
+   避免与管理端 .btn-primary 出现两种绿。仅锁定按钮文字为白。 */
+html.dark .legacy-page.legacy-page .el-button--primary.el-button--primary:not(.is-disabled):not(.is-plain):not(.is-text):not(.is-link) {
+  --el-button-text-color: #fff;
+  --el-button-hover-text-color: #fff;
+  --el-button-active-text-color: #fff;
+}
+
+/* ---------- 输入 / 下拉 / 日期 ---------- */
+.legacy-page.legacy-page .el-input__wrapper.el-input__wrapper,
+.legacy-page.legacy-page .el-select__wrapper.el-select__wrapper,
+.legacy-page.legacy-page .el-textarea__inner.el-textarea__inner {
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line) inset;
+}
+.legacy-page.legacy-page .el-input__wrapper.el-input__wrapper:hover,
+.legacy-page.legacy-page .el-select__wrapper.el-select__wrapper:hover,
+.legacy-page.legacy-page .el-textarea__inner.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--line-strong) inset;
+}
+.legacy-page.legacy-page .el-input__wrapper.el-input__wrapper.is-focus,
+.legacy-page.legacy-page .el-select__wrapper.el-select__wrapper.is-focused,
+.legacy-page.legacy-page .el-textarea__inner.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 3px var(--primary-softer);
+}
+.legacy-page.legacy-page .el-input__inner { color: var(--text); }
+.legacy-page.legacy-page .el-form-item__label { color: var(--muted); font-size: 12px; }
+.legacy-page.legacy-page .el-input-number .el-input__wrapper { border-radius: 9px; }
+
+/* ---------- 表格 ---------- */
+.legacy-page.legacy-page .el-table.el-table {
+  --el-table-border-color: var(--line);
+  --el-table-header-bg-color: var(--surface-soft);
+  --el-table-header-text-color: var(--muted);
+  --el-table-text-color: var(--text);
+  --el-table-row-hover-bg-color: var(--primary-softer);
+  --el-table-current-row-bg-color: var(--primary-softer);
+  border-radius: 11px;
+  font-size: 13px;          /* 与新页 `.table td` 同号，三页表格字号一致 */
+}
+.legacy-page.legacy-page .el-table.el-table th.el-table__cell {
+  padding: 9px 0;
+  font-size: 12px;          /* 与新页 `.table th` 同号（原 11.5px 偏小） */
+  font-weight: 600;
+  letter-spacing: 0.02em;   /* 原 0.03em：中文表头略散 */
+}
+.legacy-page.legacy-page .el-table.el-table td.el-table__cell { padding: 9px 0; }
+.legacy-page.legacy-page .el-table.el-table .cell {
+  line-height: 1.5;                    /* 与新页 `.table td` 同一行高 */
+  font-variant-numeric: tabular-nums;  /* 条码 / 索书号 / 年份等数字列上下对齐 */
+}
+.legacy-page.legacy-page .el-table--border.el-table { border-radius: 11px; overflow: hidden; }
+
+/* ---------- 标签 / 提示 / 分页 / 页签 ---------- */
+.legacy-page.legacy-page .el-tag.el-tag {
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 10.5px;
+}
+/* EP 在组件自身上定义 --el-pagination-font-size（压过 :root 的全局值），
+   故这里就地覆盖；13px 与新页 .table-foot 同号。 */
+.legacy-page.legacy-page .el-pagination.el-pagination {
+  --el-pagination-font-size: 13px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+/* select 包装层的 14px 是 EP 硬编码，同样就地覆盖到 13.5px；
+   ElMessage 瞬移到 body 且自带字号变量，对齐新页 toast 的 13px。 */
+.legacy-page.legacy-page .el-select.el-select .el-select__wrapper { font-size: 13.5px; }
+.el-message.el-message { --el-message-font-size: 13px; }
+.legacy-page.legacy-page .el-pagination.is-background .el-pager li,
+.legacy-page.legacy-page .el-pagination.is-background .btn-prev,
+.legacy-page.legacy-page .el-pagination.is-background .btn-next {
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.legacy-page.legacy-page .el-pagination.is-background .el-pager li.is-active {
+  background: var(--primary);
+  color: #fff;
+}
+.legacy-page.legacy-page .el-tabs.el-tabs .el-tabs__item {
+  height: 34px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.legacy-page.legacy-page .el-tabs.el-tabs .el-tabs__item.is-active { color: var(--ink); font-weight: 600; }
+.legacy-page.legacy-page .el-tabs.el-tabs .el-tabs__active-bar { background: var(--primary); height: 2px; }
+.legacy-page.legacy-page .el-tabs.el-tabs .el-tabs__nav-wrap::after { height: 1px; background: var(--line); }
+.legacy-page.legacy-page .el-checkbox { --el-checkbox-checked-bg-color: var(--primary); font-size: 12px; }
+.legacy-page.legacy-page .el-radio { --el-radio-input-checked-bg-color: var(--primary); }
+
+/* ---------- 弹窗 ---------- */
+.legacy-page.legacy-page .el-dialog.el-dialog { border-radius: 16px; overflow: hidden; }
+.legacy-page.legacy-page .el-dialog.el-dialog .el-dialog__header { padding: 18px 22px 12px; }
+.legacy-page.legacy-page .el-dialog.el-dialog .el-dialog__title { color: var(--ink); font-size: 16.5px; font-weight: 700; }
+.legacy-page.legacy-page .el-dialog.el-dialog .el-dialog__body { padding: 8px 22px; color: var(--text); }
+.legacy-page.legacy-page .el-dialog.el-dialog .el-dialog__footer { padding: 12px 22px 18px; }
+.legacy-page.legacy-page .el-message-box { border-radius: 14px; }
+.legacy-page.legacy-page .el-message { border-radius: 10px; }
+
+/* ==========================================================================
+   图书库列表
+   ========================================================================== */
+.legacy-page.legacy-list-page .el-card.el-card > .el-card__body { padding: 18px 20px; }
+.legacy-page.legacy-list-page .rl-panel {
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(20, 40, 32, 0.04);
+  overflow: hidden;
+}
+.legacy-page.legacy-list-page .rl-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 12px 14px;
+}
+.legacy-page.legacy-list-page .rl-panel > .rl-bar { border-bottom: 1px solid var(--line); }
+.legacy-page.legacy-list-page .rl-panel > .rl-bar .el-button { height: 34px; }
+.legacy-page.legacy-list-page .rl-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.legacy-page.legacy-list-page .rl-lib { width: 230px; }
+.legacy-page.legacy-list-page .rl-lib .el-select__wrapper { min-height: 34px; }
+.legacy-page.legacy-list-page .rl-query {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  background: color-mix(in srgb, var(--bg) 70%, var(--surface));
+}
+.legacy-page.legacy-list-page .rl-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.legacy-page.legacy-list-page .rl-query .el-input__wrapper,
+.legacy-page.legacy-list-page .rl-query .el-select__wrapper {
+  min-height: 36px;
+  background: var(--surface);
+}
+.legacy-page.legacy-list-page .rl-query .el-date-editor {
+  height: 36px;
+  background: var(--surface);
+}
+.legacy-page.legacy-list-page .rl-query .el-button { height: 36px; }
+.legacy-page.legacy-list-page .rl-filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.legacy-page.legacy-list-page .rl-checks { display: flex; align-items: center; gap: 6px; }
+.legacy-page.legacy-list-page .rl-checks .el-checkbox {
+  height: 36px;
+  margin-right: 0;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  transition: border-color 0.16s var(--ease), background 0.16s var(--ease);
+}
+.legacy-page.legacy-list-page .rl-checks .el-checkbox.is-checked {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+}
+.legacy-page.legacy-list-page .rl-checks .el-checkbox__label {
+  padding-left: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legacy-page.legacy-list-page .rl-checks .el-checkbox.is-checked .el-checkbox__label { color: var(--primary); }
+.legacy-page.legacy-list-page .rl-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 2px 10px;
+}
+.legacy-page.legacy-list-page .rl-count { font-size: 11.5px; color: var(--muted); }
+.legacy-page.legacy-list-page .rl-actions .el-button { height: 32px; }
+
+/* ==========================================================================
+   条码管理
+   ========================================================================== */
+.legacy-page.legacy-barcode-page .el-card.el-card > .el-card__body { padding: 18px 20px; }
+.legacy-page.legacy-barcode-page .bc-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+.legacy-page.legacy-barcode-page .bc-filters .el-input__wrapper,
+.legacy-page.legacy-barcode-page .bc-filters .el-select__wrapper,
+.legacy-page.legacy-barcode-page .bc-filters .el-date-editor { background: var(--surface); }
+/* 筛选控件与图书库 rl-query 同高（36px）：EP 默认 32px 偏瘦，跨页对照明显 */
+.legacy-page.legacy-barcode-page .bc-filters .el-input__wrapper,
+.legacy-page.legacy-barcode-page .bc-filters .el-select__wrapper { min-height: 36px; }
+.legacy-page.legacy-barcode-page .bc-filters .el-button { height: 36px; }
+.legacy-page.legacy-barcode-page .bc-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0 12px;
+}
+
+/* ==========================================================================
+   书标打印
+   ========================================================================== */
+.legacy-page.legacy-label-page .el-card.el-card { margin-bottom: 14px; }
+.legacy-page.legacy-label-page .quick-card { border-radius: 14px; }
+.legacy-page.legacy-label-page .quick-card .el-card__header { padding: 14px 18px 0; border-bottom: 0; }
+.legacy-page.legacy-label-page .quick-card .el-card__body { padding: 10px 18px 16px; }
+.legacy-page.legacy-label-page .quick-head > span:first-child {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.legacy-page.legacy-label-page .quick-sub { color: var(--faint); font-size: 11px; }
+.legacy-page.legacy-label-page .quick-row { gap: 8px; padding-top: 4px; }
+.legacy-page.legacy-label-page .quick-row .el-input__wrapper,
+.legacy-page.legacy-label-page .quick-row .el-select__wrapper { background: var(--surface); }
+.legacy-page.legacy-label-page .quick-label { color: var(--muted); font-size: 11.5px; }
+.legacy-page.legacy-label-page .quick-result {
+  margin-top: 10px;
+  margin-bottom: 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.legacy-page.legacy-label-page .quick-result strong { color: var(--ink); }
+.legacy-page.legacy-label-page .quick-card .el-table__body-wrapper { max-height: 300px; overflow-y: auto; }
+.legacy-page.legacy-label-page .labels-sheets:empty,
+.legacy-page.legacy-label-page .labels-sheets:not(:has(.label-sheet)) { display: none; }
+.legacy-page.legacy-label-page .labels-sheets {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+.legacy-page.legacy-label-page .empty-tip { color: var(--faint); }
+.legacy-page.legacy-label-page .el-card__header > span,
+.legacy-page.legacy-label-page .el-card__header > div > span { color: var(--ink); font-weight: 600; }
+
+/* ==========================================================================
+   套录 / 编目
+   ========================================================================== */
+.legacy-page.legacy-editor-page.editor-card { border-radius: 14px; min-height: calc(100vh - 130px); }
+.legacy-page.legacy-editor-page .el-card__body { padding: 14px 16px; }
+.legacy-page.legacy-editor-page .editor-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 9px;
+  margin-bottom: 9px;
+  border-bottom: 1px solid var(--line);
+}
+.legacy-page.legacy-editor-page .editor-head > b {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.legacy-page.legacy-editor-page .editor-head .el-button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+.legacy-page.legacy-editor-page .editor-head .el-button--primary { height: 34px; padding: 0 16px; }
+.legacy-page.legacy-editor-page .entry-panel.el-card {
+  border-radius: 12px;
+  border-color: var(--primary-soft);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.legacy-page.legacy-editor-page .entry-panel .el-card__header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--primary-soft);
+  background: linear-gradient(110deg, var(--primary-soft), var(--primary-softer));
+  box-shadow: inset 3px 0 0 var(--primary);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.legacy-page.legacy-editor-page .entry-panel .el-card__header .el-icon {
+  color: var(--primary);
+}
+.legacy-page.legacy-editor-page .entry-panel .el-card__body { padding: 12px 14px; }
+.legacy-page.legacy-editor-page .entry-panel .el-form-item__label {
+  color: var(--ink);
+  font-weight: 500;
+}
+.legacy-page.legacy-editor-page .entry-panel .el-input-group__append {
+  background: var(--primary-softer);
+  border-left-color: var(--primary-soft);
+  box-shadow: 0 0 0 1px var(--primary-soft) inset;
+}
+.legacy-page.legacy-editor-page .entry-panel .el-input-group__append .el-button {
+  color: var(--primary-deep);
+}
+.legacy-page.legacy-editor-page .entry-panel .el-input-group__append .el-button:hover {
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+}
+.legacy-page.legacy-editor-page .entry-panel .el-input-group__prepend {
+  background: var(--surface-soft);
+  border-right-color: var(--line);
+  box-shadow: 0 0 0 1px var(--line) inset;
+  color: var(--muted);
+  font-weight: 500;
+}
+.legacy-page.legacy-editor-page .entry-panel .el-input-group__prepend .unit-fixed {
+  color: var(--muted);
+}
+.legacy-page.legacy-editor-page .entry-panel .barcode-input .el-input__wrapper {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line) inset;
+  transition: background 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.legacy-page.legacy-editor-page .entry-panel .barcode-input .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--line-strong) inset;
+}
+.legacy-page.legacy-editor-page .entry-panel .barcode-input .el-input__wrapper.is-focus {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 3px var(--primary-softer);
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item.el-form-item {
+  margin: 0 -6px 10px;
+  padding: 7px 6px;
+  border: 1px solid var(--primary-soft);
+  border-radius: 10px;
+  background: linear-gradient(120deg, var(--primary-softer), var(--surface));
+  box-shadow: 0 5px 14px -12px rgba(23, 94, 84, 0.55);
+  --el-text-color-placeholder: var(--muted);
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-form-item__label {
+  color: var(--primary-deep);
+  font-weight: 600;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input__wrapper {
+  min-height: 34px;
+  border-radius: 8px 0 0 8px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--primary-soft) inset;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--primary) inset;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input__wrapper.is-focus {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 3px var(--primary-soft);
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input__inner {
+  font-size: 13px;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append {
+  padding: 0;
+  border: 0;
+  border-radius: 0 8px 8px 0;
+  background: #237666;
+  box-shadow: none;
+  overflow: hidden;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append .el-button {
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  --el-button-text-color: #fff;
+  --el-button-hover-text-color: #fff;
+  --el-button-active-text-color: #fff;
+  --el-button-disabled-text-color: #fff;
+  opacity: 1;
+  transition: background-color 0.18s var(--ease);
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append .el-button .el-icon {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+  opacity: 1;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append .el-button .el-icon svg {
+  color: #fff;
+  fill: #fff;
+  opacity: 1;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append .el-button:hover {
+  background: #1d685a;
+  color: #fff;
+}
+.legacy-page.legacy-editor-page .entry-panel .lookup-item .el-input-group__append .el-button.is-disabled {
+  background: transparent;
+  color: #fff;
+  opacity: 1;
+}
+.legacy-page.legacy-editor-page .group-head { margin: 8px 0 3px; }
+.legacy-page.legacy-editor-page .group-bar {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+.legacy-page.legacy-editor-page .group-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.legacy-page.legacy-editor-page .group-legend { font-size: 10.5px; color: var(--muted); }
+.legacy-page.legacy-editor-page .simple-form .el-form-item__label { font-size: 12.5px; }
+.legacy-page.legacy-editor-page .panel-sep { background: var(--primary-soft); }
+.legacy-page.legacy-editor-page .mode-chip {
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border-color: var(--line);
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 11px;
+}
+.legacy-page.legacy-editor-page .mode-chip.is-on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.legacy-page.legacy-editor-page .mode-chip.is-on:hover { color: #fff; opacity: 0.9; }
+html.dark .legacy-page.legacy-editor-page .mode-chip.is-on {
+  background: #237666;
+  border-color: #237666;
+}
+.legacy-page.legacy-editor-page .cand-item {
+  border-color: var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.legacy-page.legacy-editor-page .cand-item:hover { background: var(--surface-soft); border-color: var(--line-strong); }
+.legacy-page.legacy-editor-page .cand-item--on {
+  background: var(--primary-softer);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+.legacy-page.legacy-editor-page .side-col { gap: 12px; }
+
+/* ---------- 移动端 ---------- */
+@media (max-width: 760px) {
+  .legacy-page.legacy-label-page .page-header { justify-content: flex-start; }
+  .legacy-page.legacy-label-page .page-header__actions { justify-content: flex-start; flex-wrap: wrap; }
+  .legacy-page.legacy-list-page .el-card.el-card > .el-card__body,
+  .legacy-page.legacy-barcode-page .el-card.el-card > .el-card__body { padding: 14px; }
+  .legacy-page.legacy-list-page .rl-lib { width: 100%; }
+  .legacy-page.legacy-editor-page .el-card__body { padding: 10px 12px; }
+}
+
+
+/* 手机 / 窄平板：编目表单纵向铺开，录入栏落到表单下方，避免 17/7 两栏被挤成不可用 */
+@media (max-width: 900px) {
+  .legacy-page.legacy-editor-page .editor-row > .el-col,
+  .legacy-page.legacy-editor-page .simple-form .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+  .legacy-page.legacy-editor-page .side-col { padding-top: 12px !important; }
+  .legacy-page.legacy-editor-page .simple-form .el-form-item__label { width: 92px !important; }
+  .legacy-page.legacy-editor-page .callno-row { flex-wrap: wrap; }
+  .legacy-page.legacy-editor-page .simple-form .callno-row .callno-cls { flex: 1 1 100%; }
+  .legacy-page.legacy-editor-page .simple-form .callno-row .callno-no,
+  .legacy-page.legacy-editor-page .simple-form .callno-row .callno-vol { flex: 1 1 42%; }
+}
+
+
+/* ==========================================================================
+   1080P 桌面适配：不再压缩到 1366×768，编辑表单与参数面板放大一档
+   ========================================================================== */
+@media (min-height: 900px) {
+  .legacy-page.legacy-editor-page .simple-form { --el-component-size: 34px; }
+  .legacy-page.legacy-editor-page .simple-form .el-form-item { margin-bottom: 8px; }
+  .legacy-page.legacy-editor-page .simple-form .el-form-item__label { font-size: 13px; }
+  .legacy-page.legacy-editor-page .entry-panel { --el-component-size: 34px; }
+  .legacy-page.legacy-editor-page .group-head { margin: 10px 0 4px; }
+  .legacy-page.legacy-editor-page .group-title { font-size: 12px; }
+  .legacy-page.legacy-editor-page .editor-head .el-button { height: 34px; }
+  .legacy-page.legacy-editor-page .editor-head .el-button--primary { height: 36px; }
+}
+
+/* ==========================================================================
+   套录编目：核心 / 补充字段的视觉层级、索书号预览与常驻操作区
+   ========================================================================== */
+/* 核心字段：深墨标签、白底输入 */
+.legacy-page.legacy-editor-page .simple-form .el-form-item__label {
+  color: var(--ink);
+  font-weight: 500;
+}
+/* 补充字段：灰绿标签、极浅底，聚焦时恢复白底主色描边 */
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-form-item__label {
+  color: var(--muted);
+  font-weight: 400;
+}
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-input__wrapper,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-select__wrapper,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-textarea__inner {
+  background: var(--surface-soft);
+}
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-input__wrapper.is-focus,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-select__wrapper.is-focused,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-textarea__inner:focus {
+  background: var(--surface);
+}
+/* 整组补充内容：灰色组标记 + “可选”胶囊 */
+.legacy-page.legacy-editor-page .group-bar.is-optional { background: var(--line-strong); }
+.legacy-page.legacy-editor-page .group-optional {
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 9.5px;
+  line-height: 15px;
+  color: var(--muted);
+}
+
+/* 索书号：浅绿底板 + 实时拼号预览 */
+.legacy-page.legacy-editor-page .callno-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 8px 7px;
+  border: 1px solid var(--primary-soft);
+  border-radius: 9px;
+  background: var(--primary-softer);
+}
+.legacy-page.legacy-editor-page .callno-panel .callno-row { min-height: 32px; }
+.legacy-page.legacy-editor-page .callno-panel .el-input__wrapper,
+.legacy-page.legacy-editor-page .callno-panel .el-select__wrapper { background: var(--surface); }
+.legacy-page.legacy-editor-page .callno-panel .optional-control .el-input__wrapper,
+.legacy-page.legacy-editor-page .callno-panel .optional-control .el-select__wrapper { background: var(--surface-soft); }
+.legacy-page.legacy-editor-page .callno-preview {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 20px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.legacy-page.legacy-editor-page .callno-preview-dot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.legacy-page.legacy-editor-page .callno-preview.is-incomplete .callno-preview-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.legacy-page.legacy-editor-page .callno-preview strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-deep);
+  word-break: break-all;
+}
+.legacy-page.legacy-editor-page .callno-skeleton-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legacy-page.legacy-editor-page .callno-skeleton {
+  display: block;
+  height: 8px;
+  border: 1px dashed var(--faint);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+.legacy-page.legacy-editor-page .callno-skeleton.is-class { width: 54px; }
+.legacy-page.legacy-editor-page .callno-skeleton.is-book { width: 34px; }
+.legacy-page.legacy-editor-page .callno-skeleton.is-volume { width: 26px; }
+.legacy-page.legacy-editor-page .callno-skeleton-sep {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--faint);
+  opacity: 0.8;
+}
+
+/* 编辑器内部滚动：工具条（保存/质检）与右侧录入面板常驻 */
+.legacy-page.legacy-editor-page .editor-card {
+  height: calc(100vh - 130px);
+  min-height: 0;
+  overflow: hidden;
+}
+.legacy-page.legacy-editor-page .editor-card > .el-card__body {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.legacy-page.legacy-editor-page .editor-head {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: var(--surface);
+}
+.legacy-page.legacy-editor-page .side-col {
+  position: sticky;
+  top: 8px;
+  align-self: flex-start;
+}
+@media (max-width: 900px) {
+  .legacy-page.legacy-editor-page .editor-card {
+    height: auto;
+    min-height: calc(100vh - 130px);
+    overflow: visible;
+  }
+  .legacy-page.legacy-editor-page .editor-card > .el-card__body {
+    height: auto;
+    overflow-y: visible;
+  }
+  .legacy-page.legacy-editor-page .editor-head,
+  .legacy-page.legacy-editor-page .side-col { position: static; }
+}
+
+/* 补充字段聚焦时恢复白底与主色描边：不能让人误以为不可编辑 */
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-input__wrapper:focus-within,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-select__wrapper:focus-within,
+.legacy-page.legacy-editor-page .simple-form .field-optional .el-textarea__inner:focus,
+.legacy-page.legacy-editor-page .callno-panel .optional-control .el-input__wrapper:focus-within,
+.legacy-page.legacy-editor-page .callno-panel .optional-control .el-select__wrapper:focus-within {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 3px var(--primary-softer);
+}

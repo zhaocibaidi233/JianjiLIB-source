@@ -1,0 +1,29 @@
+# 本机配置与运行产物
+.env
+.env.*
+!.env.example
+launcher-config.json
+launcher-logs/
+backups/
+*.log
+*.dump
+
+# 便携运行时与本地数据（运行时由 Release 提供）
+runtime/
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node / editor
+node_modules/
+.idea/
+.vscode/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

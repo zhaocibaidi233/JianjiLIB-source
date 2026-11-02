@@ -1,0 +1,30 @@
+# 后端工程与工具配置。
+#
+# 这份文件主要给工具看：后端**不是**一个要 pip 安装的包（部署走
+# `pip install -r requirements.txt`，启动走 uvicorn），所以这里只声明
+# 语言版本下限与 lint 规则，不配 build-system。
+[project]
+name = "jianji-backend"
+version = "1.1.28"
+description = "简籍（Jianji）—— CNMARC 编目 / 馆藏 / 流通 / 读者门户 后端"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+# 迁移脚本是 Alembic 生成的骨架、fixtures 是测试数据，不属于"手写代码"
+extend-exclude = ["migrations/versions", "tests/fixtures"]
+
+[tool.ruff.lint]
+# F = pyflakes：未使用的 import / 变量、未定义名字。这一档几乎没有误报，
+# 且能挡住"删了调用忘了删 import"这类最常见的腐化，所以先只开它。
+# 想收紧时逐步加 "I"（import 排序）、"B"（bugbear），不要一次全开——
+# 一次全开的结果通常是"规则被加进 ignore 列表"。
+select = ["F"]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里 `import pytest` 常用于标记；真没用时由 F401 抓，这里不额外放宽
+"tests/*" = []
+
+[tool.ruff.format]
+quote-style = "double"
